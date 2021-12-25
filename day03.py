@@ -20,8 +20,10 @@ def verify_life_support_rating(df):
 
     # Todo: Check again whether my algorithm for this rating is working right.
 
-    oxygen_generator_rating = int(calculate_oxygen_generator_rating(df_bitwise), 2)
-    co2_scrubber_rating = int(calculate_co2_scrubber_rating(df_bitwise), 2)
+    oxygen_generator_rating_binary = calculate_oxygen_generator_rating(df_bitwise)
+    co2_scrubber_rating_binary = calculate_co2_scrubber_rating(df_bitwise)
+    oxygen_generator_rating = int(oxygen_generator_rating_binary, 2)
+    co2_scrubber_rating = int(co2_scrubber_rating_binary, 2)
 
     return oxygen_generator_rating * co2_scrubber_rating
 
@@ -30,6 +32,10 @@ def separate_bits(df_):
     for n in range(len(df_.loc[0, 0])):
         df[str(n + 1)] = df_[0].astype(str).str[n].astype(int)
     return df
+
+def inverse_bits(df_bits):
+    df_bits_inverse = -1 * (df_bits - 1)
+    return df_bits_inverse
 
 def calculate_oxygen_generator_rating(df_bitwise):
     df_most_common_bits = df_bitwise.mean().round().astype(int)
@@ -47,10 +53,13 @@ def calculate_oxygen_generator_rating(df_bitwise):
         else:
             q = byte_most_common_bits[:-n] in df[0].astype(str).str[:-n].unique()
             if q:
-                return df.loc[df[0].astype(str).str[:-n] == byte_most_common_bits[:-n]]
+                return df.loc[df[0].astype(str).str[:-n] == byte_most_common_bits[:-n]].iloc[0][0]
 
 def calculate_co2_scrubber_rating(df_bitwise):
-    df_least_common_bits = (df_bitwise.mean() - 0.001).round().astype(int)
+    # Bug: Apparently I do not understand the way to calculate the co2-scrubber-rating
+    df_most_common_bits = (df_bitwise.mean()).round().astype(int)
+    df_least_common_bits = inverse_bits(df_most_common_bits)
+    print(df_bitwise.mean())
 
     byte_least_common_bits = ''
     for b in df_least_common_bits:
@@ -63,11 +72,9 @@ def calculate_co2_scrubber_rating(df_bitwise):
             if q:
                 return byte_least_common_bits
         else:
-            q = byte_least_common_bits[:-n] in df[0].astype(str).str[
-                                              :-n].unique()
+            q = byte_least_common_bits[:-n] in df[0].astype(str).str[:-n].unique()
             if q:
-                return df.loc[
-                    df[0].astype(str).str[:-n] == byte_least_common_bits[:-n]]
+                return df.loc[df[0].astype(str).str[:-n] == byte_least_common_bits[:-n]].iloc[0][0]
 
 
 if __name__ == '__main__':
