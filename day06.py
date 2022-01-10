@@ -7,14 +7,35 @@ def main(original_file, days_of_reproduction, method='list'):
 
     if method == 'list':
         fish_timers = simulate_fish_reproduction_list(days_of_reproduction, fish_timers)
+        return len(fish_timers)
+
     elif method == 'numpy':
         fish_timers = simulate_fish_reproduction_numpy(days_of_reproduction,
                                                        fish_timers)
-    elif method == 'dict':
-        #Todo: Calculate via numbers of fish, i.e. something dict-like, but not an entry for each individual fish
-        pass
+        return len(fish_timers)
 
-    return len(fish_timers)
+    elif method == 'dict':
+        fish_timers_dict = simulate_fish_reproduction_dict(days_of_reproduction,
+                                                           fish_timers)
+        return sum(list(fish_timers_dict.values()))
+
+
+def simulate_fish_reproduction_dict(days_of_reproduction, fish_timers):
+    fish_timers_dict = {}
+    for t in range(-1, 8 + 1):
+        fish_timers_dict[t] = fish_timers.count(t)
+    for day in range(1, days_of_reproduction + 1):
+        fish_timers_dict_ = fish_timers_dict
+        for k in fish_timers_dict_.keys():
+            if k == 6:
+                fish_timers_dict[k] = fish_timers_dict_[k + 1] + \
+                                      fish_timers_dict_[-1]
+            elif k == 8:
+                fish_timers_dict[k] = fish_timers_dict[-1]
+                fish_timers_dict[-1] = 0
+            else:
+                fish_timers_dict[k] = fish_timers_dict_[k + 1]
+    return fish_timers_dict
 
 
 def simulate_fish_reproduction_numpy(days_of_reproduction, fish_timers):
@@ -52,5 +73,5 @@ if __name__ == '__main__':
     first_solution = main(original_file, days_of_reproduction=80, method='list')
     print(f'First solution: {first_solution}')
 
-    second_solution = main(original_file, days_of_reproduction=80, method='numpy')
+    second_solution = main(original_file, days_of_reproduction=256, method='dict')
     print(f'Second solution: {second_solution}')
